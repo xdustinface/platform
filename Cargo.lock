@@ -5467,7 +5467,6 @@ dependencies = [
  "async-trait",
  "bs58",
  "cbindgen 0.27.0",
- "dash-network",
  "dash-sdk",
  "dashcore",
  "dpp",
@@ -6632,7 +6631,6 @@ dependencies = [
 name = "rs-unified-sdk-ffi"
 version = "5.0.1"
 dependencies = [
- "dash-network",
  "platform-wallet-ffi",
  "rs-sdk-ffi",
 ]
@@ -6642,7 +6640,6 @@ name = "rs-unified-sdk-jni"
 version = "5.0.1"
 dependencies = [
  "android_logger",
- "dash-network",
  "dashcore",
  "dashpay-contract",
  "dpp",
