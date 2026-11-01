@@ -9365,7 +9365,7 @@ mod tests {
         .expect("static BIP-39 vector")
         .to_seed("");
         let master =
-            ExtendedPrivKey::new_master(dashcore::Network::Testnet, &seed).expect("master");
+            ExtendedPrivKey::new_master(dashcore::Network::Testnet, &*seed).expect("master");
         let xpub = ExtendedPubKey::from_priv(&master);
         let owner = Identifier::from([0xAA; 32]);
         let contact = Identifier::from([0x01; 32]);
@@ -10669,7 +10669,7 @@ mod tests {
         )
         .expect("static BIP-39 vector must parse");
         let seed = mnemonic.to_seed("");
-        let master = ExtendedPrivKey::new_master(Network::Testnet, &seed)
+        let master = ExtendedPrivKey::new_master(Network::Testnet, &*seed)
             .expect("master derivation must succeed");
         let xpub = ExtendedPubKey::from_priv(&master);
         let account = Account::from_xpub(
@@ -10701,7 +10701,7 @@ mod tests {
         )
         .expect("static BIP-39 vector must parse");
         let seed = mnemonic.to_seed("");
-        let master = ExtendedPrivKey::new_master(Network::Testnet, &seed)
+        let master = ExtendedPrivKey::new_master(Network::Testnet, &*seed)
             .expect("master derivation must succeed");
         let xpub = ExtendedPubKey::from_priv(&master);
         let account = Account::from_xpub(None, account_type, xpub, Network::Testnet)
@@ -10815,7 +10815,7 @@ mod tests {
         )
         .expect("static BIP-39 vector must parse");
         let seed = mnemonic.to_seed("");
-        let master = ExtendedPrivKey::new_master(Network::Testnet, &seed)
+        let master = ExtendedPrivKey::new_master(Network::Testnet, &*seed)
             .expect("master derivation must succeed");
         let xpub = ExtendedPubKey::from_priv(&master);
         let account =
@@ -11259,7 +11259,7 @@ mod tests {
         .expect("static BIP-39 vector must parse");
         let seed = mnemonic.to_seed("");
         let wallet = Wallet::from_seed_bytes(
-            seed,
+            *seed,
             Network::Testnet,
             key_wallet::wallet::initialization::WalletAccountCreationOptions::Default,
         )

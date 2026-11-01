@@ -585,7 +585,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let idw = wallet.identity();
 
     let mnemonic: key_wallet::Mnemonic = phrase.parse()?;
-    let master = ExtendedPrivKey::new_master(key_wallet::Network::Testnet, &mnemonic.to_seed(""))?;
+    let master = ExtendedPrivKey::new_master(key_wallet::Network::Testnet, &*mnemonic.to_seed(""))?;
 
     match std::env::var("DPNS_PHASE").as_deref() {
         Ok("run") => run_flow(idw, &master).await,

@@ -2609,7 +2609,7 @@ mod tests {
             .expect("valid mnemonic")
             .to_seed("");
         let wallet = key_wallet::wallet::Wallet::from_seed_bytes(
-            seed,
+            *seed,
             Network::Testnet,
             WalletAccountCreationOptions::None,
         )
@@ -4997,7 +4997,7 @@ mod tests {
             .expect("mnemonic")
             .to_seed("");
         let w = key_wallet::wallet::Wallet::from_seed_bytes(
-            seed,
+            *seed,
             Network::Testnet,
             WalletAccountCreationOptions::None,
         )
@@ -11064,7 +11064,7 @@ mod tests {
                 });
         }
 
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         let drained = iw
             .dashpay()
             .drain_pending_contact_crypto_until(&provider, None)
@@ -11204,7 +11204,7 @@ mod tests {
                 });
         }
 
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         let drained = iw
             .dashpay()
             .drain_pending_contact_crypto_until(&provider, None)
@@ -11348,7 +11348,7 @@ mod tests {
                 });
         }
 
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         for pass in 1..=2 {
             let drained = iw
                 .dashpay()
@@ -11448,7 +11448,7 @@ mod tests {
         }
 
         let provider = SeedCryptoProvider::from_seed(
-            Mnemonic::from_phrase(TEST_MNEMONIC)
+            *Mnemonic::from_phrase(TEST_MNEMONIC)
                 .expect("valid mnemonic")
                 .to_seed(""),
             Network::Testnet,
@@ -11527,7 +11527,7 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
 
         // The contact's encryption keypair (the "sender" of the request).
         let contact_secret = dpp::secp256k1::SecretKey::from_secret_bytes([0x42u8; 32])
@@ -11558,7 +11558,7 @@ mod tests {
         // The sender encrypts a real compact xpub to that secret.
         let compact = {
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -11713,7 +11713,7 @@ mod tests {
                 });
         }
 
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         let drained = iw
             .dashpay()
             .drain_pending_contact_crypto_until(&provider, None)
@@ -11899,7 +11899,7 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         let not_ours = Identifier::from([0x99; 32]);
         let err = iw
             .dashpay()
@@ -11988,7 +11988,7 @@ mod tests {
         let wallet = manager.get_wallet(&wallet_id).await.unwrap();
         let iw = wallet.identity();
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         persister.stores.lock().unwrap().clear();
         let first = iw
             .dashpay()
@@ -12014,7 +12014,7 @@ mod tests {
         // A subsequent transparent send must draw a third address, not reuse
         // either durably exposed withdrawal destination.
         fund_bip44_account_0(&manager, wallet_id, 0xC5, 120_000).await;
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
         with_accepting_broadcaster(iw)
             .dashpay()
             .send_payment(&owner, &contact, 50_000, None, &signer, &provider)
@@ -12042,8 +12042,8 @@ mod tests {
         let iw = wallet.identity();
         fund_bip44_account_0(&manager, wallet_id, 0xC6, 120_000).await;
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
         let entered = Arc::new(tokio::sync::Barrier::new(2));
         let release = Arc::new(tokio::sync::Barrier::new(2));
         let gated =
@@ -12100,7 +12100,7 @@ mod tests {
         let addresses = install_external_account(&manager, wallet_id, owner, contact).await;
         let wallet = manager.get_wallet(&wallet_id).await.unwrap();
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
         *persister.allow_stores_then_fail.lock().unwrap() = Some(0);
         assert!(matches!(
             wallet
@@ -12253,8 +12253,9 @@ mod tests {
         let wallet = manager.get_wallet(&wallet_id).await.unwrap();
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed("");
         let reserve = |wallet: Arc<crate::wallet::platform_wallet::PlatformWallet>| {
+            let seed = seed.clone();
             tokio::spawn(async move {
-                let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
+                let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
                 wallet
                     .identity()
                     .dashpay()
@@ -12378,8 +12379,8 @@ mod tests {
 
         // A signer + provider derived from the same test seed — the production
         // posture (Keychain signer present on the send path).
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         // The send fails (no external account for `pay_contact`), but the drain
         // it runs first must have completed the queued RegisterReceiving op.
@@ -12471,7 +12472,7 @@ mod tests {
                 .expect("mnemonic")
                 .to_seed("");
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -12503,8 +12504,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let err = iw
             .dashpay()
@@ -12581,7 +12582,7 @@ mod tests {
             .to_seed("");
         let compact = {
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -12609,8 +12610,8 @@ mod tests {
             .await
             .expect("register external account");
 
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
         let result = iw
             .dashpay()
             .send_payment(&owner_id, &contact_id, 100_000, None, &signer, &provider)
@@ -12665,7 +12666,7 @@ mod tests {
                 .expect("mnemonic")
                 .to_seed("");
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -12697,8 +12698,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         // Two failed builds in a row: without rollback each one consumes an
         // index and the pool's used range marches forward off-chain.
@@ -12778,8 +12779,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let rejecting = with_rejecting_broadcaster(iw);
         let err = rejecting
@@ -12826,8 +12827,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         // Clear the store log so the assertions below see only the send's
         // own writes.
@@ -13004,7 +13005,7 @@ mod tests {
                 .expect("mnemonic")
                 .to_seed("");
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -13047,8 +13048,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let iw_send = with_accepting_broadcaster(iw);
         iw_send
@@ -13131,8 +13132,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let stamped = synced_height(&manager, wallet_id).await;
         let entered = Arc::new(tokio::sync::Barrier::new(2));
@@ -13230,8 +13231,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let entered = Arc::new(tokio::sync::Barrier::new(2));
         let release = Arc::new(tokio::sync::Barrier::new(2));
@@ -13342,8 +13343,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let entered = Arc::new(tokio::sync::Barrier::new(2));
         let release = Arc::new(tokio::sync::Barrier::new(2));
@@ -13644,7 +13645,7 @@ mod tests {
                 .expect("mnemonic")
                 .to_seed("");
             let w = key_wallet::wallet::Wallet::from_seed_bytes(
-                seed,
+                *seed,
                 Network::Testnet,
                 WalletAccountCreationOptions::None,
             )
@@ -13703,8 +13704,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let wallet = manager.get_wallet(&wallet_id).await.expect("wallet");
         let iw = with_accepting_broadcaster(wallet.identity());
@@ -13758,8 +13759,8 @@ mod tests {
         let seed = Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid mnemonic")
             .to_seed("");
-        let provider = SeedCryptoProvider::from_seed(seed, Network::Testnet);
-        let signer = SeedSigner::new(seed, Network::Testnet);
+        let provider = SeedCryptoProvider::from_seed(*seed, Network::Testnet);
+        let signer = SeedSigner::new(*seed, Network::Testnet);
 
         let wallet = manager.get_wallet(&wallet_id).await.expect("wallet");
         let iw = with_accepting_broadcaster(wallet.identity());
@@ -13813,9 +13814,9 @@ mod tests {
             .expect("valid mnemonic")
             .to_seed("");
         (
-            SeedSigner::new(seed, Network::Testnet),
+            SeedSigner::new(*seed, Network::Testnet),
             crate::wallet::identity::network::contact_requests::SeedCryptoProvider::from_seed(
-                seed,
+                *seed,
                 Network::Testnet,
             ),
         )
@@ -15056,7 +15057,7 @@ mod tests {
         let reserving = Arc::clone(&wallet);
         let mut reserve = tokio::spawn(async move {
             let provider = SeedCryptoProvider::from_seed(
-                Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed(""),
+                *Mnemonic::from_phrase(TEST_MNEMONIC).unwrap().to_seed(""),
                 Network::Testnet,
             );
             reserving

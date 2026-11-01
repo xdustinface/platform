@@ -1366,15 +1366,18 @@ mod register_wallet_duplicate_tests {
         let network = Network::Testnet;
         let mnemonic = Mnemonic::from_phrase(TEST_MNEMONIC).expect("valid test mnemonic");
         let seed_bytes = mnemonic.to_seed("");
-        let create = |manager: Arc<PlatformWalletManager<NoopPersister>>| async move {
-            manager
-                .create_wallet_from_seed_bytes(
-                    network,
-                    &seed_bytes,
-                    WalletAccountCreationOptions::Default,
-                    Some(0),
-                )
-                .await
+        let create = |manager: Arc<PlatformWalletManager<NoopPersister>>| {
+            let seed_bytes = seed_bytes.clone();
+            async move {
+                manager
+                    .create_wallet_from_seed_bytes(
+                        network,
+                        &seed_bytes,
+                        WalletAccountCreationOptions::Default,
+                        Some(0),
+                    )
+                    .await
+            }
         };
         let wallet_id = create(Arc::clone(&manager))
             .await
@@ -1431,15 +1434,18 @@ mod register_wallet_duplicate_tests {
         let network = Network::Testnet;
         let mnemonic = Mnemonic::from_phrase(TEST_MNEMONIC).expect("valid test mnemonic");
         let seed_bytes = mnemonic.to_seed("");
-        let create = |manager: Arc<PlatformWalletManager<NoopPersister>>| async move {
-            manager
-                .create_wallet_from_seed_bytes(
-                    network,
-                    &seed_bytes,
-                    WalletAccountCreationOptions::Default,
-                    Some(0),
-                )
-                .await
+        let create = |manager: Arc<PlatformWalletManager<NoopPersister>>| {
+            let seed_bytes = seed_bytes.clone();
+            async move {
+                manager
+                    .create_wallet_from_seed_bytes(
+                        network,
+                        &seed_bytes,
+                        WalletAccountCreationOptions::Default,
+                        Some(0),
+                    )
+                    .await
+            }
         };
 
         let wallet_id = create(Arc::clone(&manager))
@@ -1673,6 +1679,7 @@ mod persister_error_tests {
     use key_wallet::wallet::initialization::WalletAccountCreationOptions;
     use key_wallet::Network;
     use tracing::Level;
+    use zeroize::Zeroizing;
 
     use crate::changeset::{
         ClientStartState, PersistenceError, PersistenceErrorKind, PlatformWalletChangeSet,
@@ -1793,7 +1800,7 @@ mod persister_error_tests {
         Arc::new(PlatformWalletManager::new(sdk, persister, event_handler))
     }
 
-    fn seed_bytes() -> [u8; 64] {
+    fn seed_bytes() -> Zeroizing<[u8; 64]> {
         Mnemonic::from_phrase(TEST_MNEMONIC)
             .expect("valid test mnemonic")
             .to_seed("")

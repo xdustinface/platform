@@ -493,6 +493,15 @@ pub unsafe extern "C" fn platform_wallet_manager_spv_start(
             "llmq_devnet_params is only valid on devnet",
         );
     }
+    let (Ok(llmq_devnet_size), Ok(llmq_devnet_threshold)) = (
+        u16::try_from(llmq_devnet_size),
+        u16::try_from(llmq_devnet_threshold),
+    ) else {
+        return PlatformWalletFFIResult::err(
+            PlatformWalletFFIResultCode::ErrorInvalidParameter,
+            "llmq_devnet_size and llmq_devnet_threshold must fit in 16 bits",
+        );
+    };
 
     // Dash Core devnet peers disconnect any inbound connection whose
     // user agent doesn't contain `devnet.devnet-<name>`. Rebuild the
@@ -522,8 +531,8 @@ pub unsafe extern "C" fn platform_wallet_manager_spv_start(
     let mut config = ClientConfig::default();
     config.network = net;
     config.storage_path = std::path::PathBuf::from(&data_dir_str);
-    if let Some(ua) = user_agent_str.clone() {
-        config.user_agent = Some(ua);
+    if let Some(ua) = user_agent_str {
+        config.user_agent = normalize_user_agent(ua);
     }
     if start_from_height > 0 {
         config.start_from_height = Some(start_from_height);
@@ -556,6 +565,20 @@ pub unsafe extern "C" fn platform_wallet_manager_spv_start(
     start_spv_outside_registry(handle, move |spv, still_owned| {
         block_on_worker(async move { spv.start_and_spawn(config, still_owned).await })
     })
+}
+
+/// Puts `ua` in the `/name:version/` form and bounds it to the 256 bytes Dash
+/// Core reads (`MAX_SUBVERSION_LENGTH`). dash-spv sends the configured user
+/// agent unchanged.
+fn normalize_user_agent(mut ua: String) -> String {
+    if !ua.starts_with('/') {
+        ua.insert(0, '/');
+    }
+    if !ua.ends_with('/') {
+        ua.push('/');
+    }
+    ua.truncate(ua.floor_char_boundary(256));
+    ua
 }
 
 /// Run `run_start` on `handle`'s SPV runtime with the handle registry
@@ -923,6 +946,21 @@ mod spv_start_registry_tests {
             "unexpected message: {message:?}"
         );
         drop(PLATFORM_WALLET_MANAGER_STORAGE.remove(handle));
+    }
+
+    #[test]
+    fn should_normalize_the_configured_user_agent() {
+        assert_eq!(normalize_user_agent("app:1.0".to_string()), "/app:1.0/");
+        assert_eq!(normalize_user_agent("/app:1.0/".to_string()), "/app:1.0/");
+        assert_eq!(normalize_user_agent("/app:1.0".to_string()), "/app:1.0/");
+
+        let long = normalize_user_agent("a".repeat(300));
+        assert_eq!(long.len(), 256);
+        assert!(long.starts_with('/'));
+
+        // A multi-byte character across byte 256 is dropped whole.
+        let multibyte = normalize_user_agent(format!("{}é", "a".repeat(254)));
+        assert_eq!(multibyte, format!("/{}", "a".repeat(254)));
     }
 }
 
