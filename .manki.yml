@@ -1,0 +1,48 @@
+# Manki — AI Code Review Configuration
+# https://github.com/manki-review/manki
+
+auto_review: true
+auto_approve: true
+
+# The list replaces the defaults, so it repeats them to keep the same files out of review.
+exclude_paths:
+  - "*.lock"
+  - "dist/**"
+  - "*.generated.*"
+  - ".yarn/**"
+  - ".pnp.*"
+
+# Bot PRs get no automatic review. Read from the base branch only.
+skip_authors: ["dependabot[bot]", "github-actions[bot]"]
+
+instructions: |
+  This is Dash Platform: a Tenderdash-based chain whose state lives in GroveDB.
+  Rust packages hold the protocol (rs-dpp), storage and proofs (rs-drive),
+  the ABCI application (rs-drive-abci) and the SDKs. JavaScript packages hold
+  dashmate and the DAPI clients, with Swift and Kotlin SDKs over an FFI.
+  Pay special attention to:
+  - Consensus-critical code paths: state transition validation, fees, storage
+    layout and anything that changes the state root. Nodes that disagree split the chain.
+  - Protocol versioning: a change to consensus behavior must not alter the
+    behavior of an already released protocol version.
+  - Proof generation and proof verification must agree for every query.
+
+# Read from the base branch only, so a PR cannot weaken its own review.
+review:
+  critical_paths:
+    - "packages/rs-dpp/**"
+    - "packages/rs-drive/**"
+    - "packages/rs-drive-abci/**"
+    - "packages/rs-drive-proof-verifier/**"
+    - "packages/rs-platform-version/**"
+  outside_input: >-
+    State transitions and queries sent by clients. Data received from
+    Tenderdash and Dash Core. Responses and proofs that DAPI nodes return to
+    the SDKs. Data contracts and documents written by any identity.
+
+static_analysis:
+  analyzers:
+    secrets: true
+
+memory:
+  enabled: false
