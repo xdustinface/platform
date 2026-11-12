@@ -1,0 +1,58 @@
+# Manki — AI Code Review Configuration
+# https://github.com/manki-review/manki
+
+auto_review: true
+auto_approve: true
+
+# The list replaces the defaults, so it repeats them to keep the same files out of review.
+exclude_paths:
+  - "*.lock"
+  - "dist/**"
+  - "*.generated.*"
+  - ".yarn/**"
+  - ".pnp.*"
+
+# Bot PRs get no automatic review. Read from the base branch only.
+skip_authors: ["dependabot[bot]", "github-actions[bot]"]
+
+instructions: |
+  This is Dash Platform: a Tenderdash-based chain whose state lives in GroveDB.
+  Rust packages hold the protocol (rs-dpp), storage and proofs (rs-drive),
+  the ABCI application (rs-drive-abci) and the SDKs. JavaScript packages hold
+  dashmate and the DAPI clients, with Swift and Kotlin SDKs over an FFI.
+  Pay special attention to:
+  - Consensus-critical code paths: state transition validation, fees, storage
+    layout and anything that changes the state root. Nodes that disagree split the chain.
+  - Protocol versioning: a change to consensus behavior must not alter the
+    behavior of an already released protocol version.
+  - Proof generation and proof verification must agree for every query.
+
+# Read from the base branch only, so a PR cannot weaken its own review.
+review:
+  critical_paths:
+    - "packages/rs-dpp/**"
+    - "packages/rs-drive/**"
+    - "packages/rs-drive-abci/**"
+    - "packages/rs-drive-proof-verifier/**"
+    - "packages/rs-platform-version/**"
+  outside_input: >-
+    State transitions and queries sent by clients. Data received from
+    Tenderdash and Dash Core. Responses and proofs that DAPI nodes return to
+    the SDKs. Data contracts and documents written by any identity.
+
+# Each entry is pinned to the version this branch builds against. Read from the base branch only.
+related_repos:
+  - { repo: dashpay/tenderdash, kind: reference, ref: v1.8.1, paths: [spec/abci++/, abci/types/, internal/consensus/, internal/state/, types/] }
+  - { repo: dashpay/rs-tenderdash-abci, kind: dependency, ref: v1.8.1 }
+  - { repo: dashpay/grovedb, kind: dependency, ref: 2128ea18f9b1c2f9502f99967b1b1c6485c91f8b }
+  - { repo: dashpay/rust-dashcore, kind: dependency, ref: aca020263990a86a15cc1d97ae2cbf965d488db5, paths: [dash/src/, dash-spv/src/, key-wallet/src/, hashes/src/] }
+  - { repo: dashpay/dash, kind: reference, ref: v23.1.8, paths: [src/] }
+  - { repo: dashpay/dips, kind: reference }
+  - { repo: dashpay/dash-evo-tool, kind: consumer }
+
+static_analysis:
+  analyzers:
+    secrets: true
+
+memory:
+  enabled: false
