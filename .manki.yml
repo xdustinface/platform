@@ -27,6 +27,10 @@ instructions: |
     behavior of an already released protocol version.
   - Proof generation and proof verification must agree for every query.
 
+# The judge reads the code a finding rests on itself, with up to 20 tool calls.
+judge:
+  tool_steps: 20
+
 # Read from the base branch only, so a PR cannot weaken its own review.
 review:
   critical_paths:
