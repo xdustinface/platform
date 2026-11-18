@@ -29,6 +29,14 @@ instructions: |
 
 # Read from the base branch only, so a PR cannot weaken its own review.
 review:
+  groups:
+    trivial: [claude-sonnet-5-5]
+    solo: [claude-opus-5-5]
+    full: [claude-opus-5-5, gpt-6.2-sol]
+  routing:
+    internal: full
+    behavior: full
+  sweep: warnings
   critical_paths:
     - "packages/rs-dpp/**"
     - "packages/rs-drive/**"
