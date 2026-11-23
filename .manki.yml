@@ -28,15 +28,20 @@ instructions: |
   - Proof generation and proof verification must agree for every query.
 
 # Read from the base branch only, so a PR cannot weaken its own review.
+models:
+  second_refuter: gpt-6.2-sol
+  fallback: claude-sonnet-5-5
+
 review:
   groups:
     trivial: [claude-sonnet-5-5]
     solo: [claude-opus-5-5]
-    full: [{ model: claude-opus-5-5, effort: high }, { model: gpt-6.2-sol, effort: medium }]
+    full: [claude-opus-5-5, gpt-6.2-sol]
   routing:
     internal: full
     behavior: full
-  sweep: warnings
+  sweep: blockers
+  scope_blocks: true
   critical_paths:
     - "packages/rs-dpp/**"
     - "packages/rs-drive/**"
